@@ -1,1 +1,5 @@
-Shell script for downloading all notes from CATE.
+Shell script for downloading all notes from CATE into folders by name
+of the course they are from.
+
+If you change it to make it do anything cool, please email js2310 and I
+will give you write access :)
