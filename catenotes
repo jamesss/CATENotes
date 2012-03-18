@@ -3,7 +3,7 @@
 
 read -p "Enter the year when the current academic year started, e.g. '2011': " year
 read -p "Enter the course code for your course, e.g. 'c2': " ccode
-read -p "Where would you like to store these files? (CATE-$year-$ccode)" cate_dir
+read -p "Where would you like to store these files? (CATE-$year-$ccode): " cate_dir
 read -p "Enter your DoC username: " username
 read -s -p "Enter your DoC password: " password
 
@@ -11,7 +11,7 @@ if [ -z "$cate_dir" ]; then
   $cate_dir="CATE-$year-$ccode"
 fi
 
-echo "Downloading notes from CATE...\n"
+echo -e "\nDownloading notes from CATE..."
 
 curl https://$username:$password@cate.doc.ic.ac.uk/timetable.cgi?keyt=$year:{1,3,5}:$ccode:$username -s | grep -e \
   "<td rowspan=\"[0-9]\" bgcolor=\"white\"><b><font color=\"blue\">[0-9]*</font>[a-zA-Z0-9- ]*</b><br>" -A2 | sed "s/--//g" | sed 's/^[ \t]*//' | awk NF > .clist
@@ -25,19 +25,18 @@ cat .flist | while read line; do
   code=`echo $line | cut -f1 -d'-'`
   echo "Downloading notes for $line..."
   notescode=`grep .clist -e $code -A1 | grep "<a" | sed "s/<a href=\"notes.cgi\?key=$year:\([0-9]*\):[0-9]*:$ccode:new:$username\">/\1/" | head -n1`
-  count=`curl https://$username:$password@cate.doc.ic.ac.uk/notes.cgi?key=$year:$notescode:3:$ccode:new:$username -s \
-  | grep -c -e "<td align=center bgcolor=\"white\">pdf</td>"`
   noteslist=`curl https://$username:$password@cate.doc.ic.ac.uk/notes.cgi?key=$year:$notescode:3:$ccode:new:$username -s | grep -e "<a href=\"showfile.cgi" \
   | sed "s/<td bgcolor=\"white\"><a href=\"showfile.cgi\?key=$year:3:\([0-9]*\):$ccode:NOTES:$username\"/\1/" | cut -f1 -d'>'`
-
+  count=`echo $noteslist | wc -l | awk NF`
   echo "$count items found!"
-
+  index=1
   for i in $noteslist
   do
     name=`curl https://$username:$password@cate.doc.ic.ac.uk/notes.cgi?key=$year:$notescode:3:$ccode:new:$username -s | grep -e "<a href=\"showfile.cgi?key=$year:3:$i" \
     | sed "s/<td bgcolor=\"white\"><a href=\"showfile.cgi?key=$year:3:\([0-9]*\):$ccode:NOTES:$username\"/\1/" | cut -f2 -d'>' | cut -f1 -d'<'`
     echo "Downloading $name..."
-    curl https://$username:$password@cate.doc.ic.ac.uk/showfile.cgi?key=$year:3:$i:$ccode:NOTES:$username -s -o "$cate_dir/$line/$name.pdf"
+    curl https://$username:$password@cate.doc.ic.ac.uk/showfile.cgi?key=$year:3:$i:$ccode:NOTES:$username -s -o "$cate_dir/$line/$index-$name.pdf"
+    index=`expr $index + 1`
   done
 done
 
