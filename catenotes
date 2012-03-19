@@ -11,7 +11,7 @@ if [ -z "$cate_dir" ]; then
   $cate_dir="CATE-$year-$ccode"
 fi
 
-echo -e "\nDownloading notes from CATE..."
+echo "\nDownloading notes from CATE..."
 
 curl https://$username:$password@cate.doc.ic.ac.uk/timetable.cgi?keyt=$year:{1,3,5}:$ccode:$username -s | grep -e \
   "<td rowspan=\"[0-9]\" bgcolor=\"white\"><b><font color=\"blue\">[0-9]*</font>[a-zA-Z0-9- ]*</b><br>" -A2 | sed "s/--//g" | sed 's/^[ \t]*//' | awk NF > .clist
@@ -27,8 +27,6 @@ cat .flist | while read line; do
   notescode=`grep .clist -e $code -A1 | grep "<a" | sed "s/<a href=\"notes.cgi\?key=$year:\([0-9]*\):[0-9]*:$ccode:new:$username\">/\1/" | head -n1`
   noteslist=`curl https://$username:$password@cate.doc.ic.ac.uk/notes.cgi?key=$year:$notescode:3:$ccode:new:$username -s | grep -e "<a href=\"showfile.cgi" \
   | sed "s/<td bgcolor=\"white\"><a href=\"showfile.cgi\?key=$year:3:\([0-9]*\):$ccode:NOTES:$username\"/\1/" | cut -f1 -d'>'`
-  count=`echo $noteslist | wc -l | awk NF`
-  echo "$count items found!"
   index=1
   for i in $noteslist
   do
@@ -38,6 +36,8 @@ cat .flist | while read line; do
     curl https://$username:$password@cate.doc.ic.ac.uk/showfile.cgi?key=$year:3:$i:$ccode:NOTES:$username -s -o "$cate_dir/$line/$index-$name.pdf"
     index=`expr $index + 1`
   done
+  index=`expr $index - 1`
+  echo "$index items downloaded into $line."
 done
 
 rm .clist
