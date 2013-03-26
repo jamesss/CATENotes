@@ -1,5 +1,7 @@
 Shell script for downloading all notes from CATE into folders by name
 of the course they are from.
 
-If you change it to make it do anything cool, please email js2310 and I
-will give you write access :)
+Shell script for downloading selected past papers from exams.doc into
+folders by year. Some papers on the server are not named correctly and
+therefore do not download (mostly 3rd/4th year courses).
+
