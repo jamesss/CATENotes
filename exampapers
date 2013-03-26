@@ -1,0 +1,23 @@
+#!/bin/bash
+# Script for downloading all DoC past exam papers
+
+echo "Space-separated list of course codes, e.g. '312 333'"
+read -p "> " CODES
+read -p "DoC login: " USER
+read -s -p "DoC password: " PASS
+echo ""
+
+COURSES=($CODES)
+YEARS=(07-08 08-09 09-10 10-11 11-12)
+
+for YEAR in "${YEARS[@]}"
+do
+  mkdir -p $YEAR
+  cd $YEAR
+  for COURSE in "${COURSES[@]}"
+  do
+    echo "Downloading $YEAR/$COURSE..."
+    curl https://$USER:$PASS@exams.doc.ic.ac.uk/pastpapers/papers.$YEAR/C$COURSE.pdf -O -s
+  done
+  cd ..
+done
